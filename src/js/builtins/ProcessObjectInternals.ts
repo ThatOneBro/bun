@@ -524,12 +524,26 @@ export function getStdinStream(fd_) {
     #onClose;
     #onDrain;
 
+    #setRawMode;
+    #internalIsRaw;
+
     get isTTY() {
       return require("node:tty").isatty(fd_);
     }
 
     get fd() {
       return fd_;
+    }
+
+    get isRaw() {
+      return (this.#internalIsRaw ??=
+        require("node:tty")[Symbol.for("__BUN_INTERNAL_DO_NOT_USE_ELSE_RISK_TERMINATION__isRaw")])(fd_);
+    }
+
+    #createSetRawMode() {
+      var internalSetRawMode =
+        require("node:tty")[Symbol.for("__BUN_INTERNAL_DO_NOT_USE_ELSE_RISK_TERMINATION__setRawMode")];
+      return mode => internalSetRawMode(fd_, mode);
     }
 
     constructor() {
@@ -572,7 +586,11 @@ export function getStdinStream(fd_) {
       }
     }
 
-    setRawMode(mode) {}
+    setRawMode(mode) {
+      // TODO: Validate mode
+      (this.#setRawMode ??= this.#createSetRawMode())(mode);
+      return this;
+    }
 
     on(name, callback) {
       // Streams don't generally required to present any data when only
