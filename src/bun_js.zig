@@ -51,6 +51,8 @@ pub const Run = struct {
         var graph_ptr = try bun.default_allocator.create(bun.StandaloneModuleGraph);
         graph_ptr.* = graph;
 
+        _ = C.setTtyOrigTermiosIfNeeded();
+
         js_ast.Expr.Data.Store.create(default_allocator);
         js_ast.Stmt.Data.Store.create(default_allocator);
         var arena = try Arena.init();
@@ -366,6 +368,8 @@ pub const Run = struct {
         const exit_code = this.vm.exit_handler.exit_code;
 
         vm.onExit();
+
+        _ = C.setTtyRawMode(false);
 
         if (!JSC.is_bindgen) JSC.napi.fixDeadCodeElimination();
         Global.exit(exit_code);
