@@ -48,11 +48,14 @@ pub const Run = struct {
         JSC.markBinding(@src());
         bun.JSC.initialize();
 
+<<<<<<< HEAD
         var graph_ptr = try bun.default_allocator.create(bun.StandaloneModuleGraph);
         graph_ptr.* = graph;
 
         _ = C.setTtyOrigTermiosIfNeeded();
 
+=======
+>>>>>>> b95792897 (fix(tty): fix isRaw, setRawMode, refactor cpp)
         js_ast.Expr.Data.Store.create(default_allocator);
         js_ast.Stmt.Data.Store.create(default_allocator);
         var arena = try Arena.init();

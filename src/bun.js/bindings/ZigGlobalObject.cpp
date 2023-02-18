@@ -92,6 +92,7 @@
 #include "JSStringDecoder.h"
 #include "JSReadableState.h"
 #include "JSReadableHelper.h"
+#include "JSTTYHelper.h"
 #include "Process.h"
 #include "AsyncContextFrame.h"
 
@@ -1672,6 +1673,13 @@ JSC:
             obj->putDirect(
                 vm, JSC::PropertyName(JSC::Identifier::fromString(vm, "onEofChunk"_s)),
                 JSC::JSFunction::create(vm, globalObject, 0, "onEofChunk"_s, jsReadable_onEofChunk, ImplementationVisibility::Public), 0);
+            return JSValue::encode(obj);
+        }
+
+        if (string == "bun:tty"_s) {
+            auto* obj = constructEmptyObject(globalObject);
+            obj->putDirect(vm, JSC::PropertyName(JSC::Identifier::fromString(vm, "isRaw"_s)), JSC::JSFunction::create(vm, globalObject, 0, "isRaw"_s, jsFunctionInternalTty_isRaw, ImplementationVisibility::Public), 0);
+            obj->putDirect(vm, JSC::PropertyName(JSC::Identifier::fromString(vm, "setRawMode"_s)), JSC::JSFunction::create(vm, globalObject, 0, "setRawMode"_s, jsFunctionInternalTty_setRawMode, ImplementationVisibility::Public), 0);
             return JSValue::encode(obj);
         }
 
