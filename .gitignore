@@ -121,3 +121,6 @@ cold-jsc-start.d
 src/js/out/modules_dev
 
 make-dev-stats.csv
+
+test/helpers/*.so
+test/helpers/*.dylib
