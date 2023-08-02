@@ -67,7 +67,6 @@ inline void generateTTYSourceCode(JSC::JSGlobalObject *lexicalGlobalObject,
   tty->putDirect(vm, JSC::Identifier::fromString(vm, "WriteStream"_s), notimpl);
   exportValues.append(notimpl);
 
-<<<<<<< HEAD
   JSC::Identifier isRawSymbolIdent =
       Identifier::fromUid(vm.symbolRegistry().symbolForKey(
           "__BUN_INTERNAL_DO_NOT_USE_ELSE_RISK_TERMINATION__isRaw"_s));
@@ -84,12 +83,6 @@ inline void generateTTYSourceCode(JSC::JSGlobalObject *lexicalGlobalObject,
   tty->putDirect(vm, PropertyName(setRawModeSymbolIdent),
                  internalSetRawModeFunction);
   exportValues.append(internalSetRawModeFunction);
-=======
-  tty->putDirect(vm,
-                 PropertyName(Identifier::fromUid(
-                     vm.symbolRegistry().symbolForKey("CommonJS"_s))),
-                 jsNumber(0), 0);
->>>>>>> b95792897 (fix(tty): fix isRaw, setRawMode, refactor cpp)
 
   for (size_t i = 0; i < exportNames.size(); i++) {
     tty->putDirect(vm, exportNames[i], exportValues.at(i), 0);
