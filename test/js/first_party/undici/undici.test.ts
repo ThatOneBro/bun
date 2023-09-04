@@ -1,6 +1,6 @@
 import type { Server } from "bun";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { request } from "undici";
+import { ProxyAgent, request } from "undici";
 import { createServer } from "../../../http-test-server";
 
 describe("undici", () => {
@@ -135,6 +135,18 @@ describe("undici", () => {
 
     it("should properly append headers to the request", async () => {
       const { body } = await request(`${hostUrl}/headers`, {
+        headers: {
+          "x-foo": "bar",
+        },
+      });
+      expect(body).toBeDefined();
+      const json = (await body.json()) as { headers: { "x-foo": string } };
+      expect(json.headers["x-foo"]).toBe("bar");
+    });
+
+    it("should allow the passing of a `ProxyAgent` to `request` as a `dispatcher`", async () => {
+      const { body } = await request(`${hostUrl}/headers`, {
+        dispatcher: new ProxyAgent("http://testing.com"),
         headers: {
           "x-foo": "bar",
         },
