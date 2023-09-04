@@ -1,7 +1,6 @@
+import type { Server } from "bun";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { request } from "undici";
-
-import { Server } from "bun";
 import { createServer } from "../../../http-test-server";
 
 describe("undici", () => {
