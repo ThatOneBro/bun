@@ -8,7 +8,7 @@ const { Readable } = StreamModule as { Readable: s.Readable };
 const { _ReadableFromWebForUndici: ReadableFromWeb } = StreamModule[Symbol.for("::bunternal::")];
 
 const ObjectCreate = Object.create;
-const kEmptyObject = ObjectCreate(null);
+const kEmptyObject = ObjectCreate(null) as Record<string, undefined>;
 
 const kBunUndiciProxyAgentUri = Symbol("::bunUndiciProxyAgentUri::");
 const kBunUndiciProxyAgentToken = Symbol("::bunUndiciProxyAgentToken::");
@@ -107,7 +107,7 @@ type RequestOptions = {
   signal?: AbortSignal | e.EventEmitter | null;
   maxRedirections?: number;
   body?: string | Buffer | Uint8Array | s.Readable | null | FormData;
-  headers?: IncomingHttpHeaders | string[] | null;
+  headers?: string[][] | Record<string, string | ReadonlyArray<string>> | Headers;
   query?: Record<string, any>;
   reset?: boolean;
   throwOnError?: boolean;
@@ -130,8 +130,6 @@ async function request(
   options = {
     method: "GET",
     signal: null,
-    headers: null,
-    query: undefined,
     // idempotent: false, // GET and HEAD requests are idempotent by default
     // blocking = false,
     // upgrade = false,
@@ -140,8 +138,6 @@ async function request(
     reset: false,
     throwOnError: false,
     body: null,
-    maxRedirections: undefined,
-    dispatcher: undefined,
   },
 ): Promise<UndiciResponse> {
   let {
@@ -209,12 +205,15 @@ async function request(
     // if proxyAgent.token is defined, put a proxy auth header with token in the headers
     const token = dispatcher[kBunUndiciProxyAgentToken];
     if (token) {
-      if (inputHeaders) {
-        if (Array.isArray(inputHeaders)) {
-          // TODO: figure out what to do here???
-        } else {
-          inputHeaders["proxy-authorization"] = token;
+      if (!inputHeaders) inputHeaders = {};
+      if (Array.isArray(inputHeaders)) {
+        for (let i = 0; i < inputHeaders.length; i++) {
+          throw new TypeError("");
         }
+      } else if (inputHeaders instanceof Headers) {
+        inputHeaders.append("proxy-authorization", token);
+      } else {
+        inputHeaders["proxy-authorization"] = token;
       }
     }
   }
@@ -229,7 +228,7 @@ async function request(
     signal,
     mode: "cors",
     method: sanitizedMethod,
-    headers: inputHeaders || kEmptyObject,
+    headers: inputHeaders ?? kEmptyObject,
     body: inputBody,
     redirect: maxRedirections === undefined || maxRedirections > 0 ? "follow" : "manual",
     keepalive: !reset,
@@ -306,16 +305,23 @@ class ProxyAgent extends Dispatcher {
 
     if (!uri || typeof uri !== "string") throw new TypeError("uri must be a string");
     if (uri.startsWith("https://")) throw new TypeError("proxy over TLS not implemented");
-    if (!uri.startsWith("http://")) throw new Error("uri must be a valid URL string with the protocol `http://`");
+    if (!uri.startsWith("http://")) throw new TypeError("uri must be a valid URL string with the protocol `http://`");
 
     let token;
     if (options) {
       if (typeof options !== "object") throw new TypeError("options must be an object");
       // Auth token can either be passed via `token` or `auth` prop, though `auth` is now deprecated
-      const { token: _token, auth } = options;
-      token = _token ?? auth;
+      const { token: _token, auth, headers } = options;
+      if (auth && token) {
+        throw new Error(
+          "invalid arguments: cannot use `opt.auth` and `opt.token` simultaneously; use `opt.token` as `opt.auth` is deprecated",
+        );
+      }
+      token = _token ?? `Basic ${auth}`;
       if (token && (typeof token !== "string" || !token.startsWith("Basic ")))
         throw new TypeError("token must be a string formated as `Basic <TOKEN_IN_BASE_64>`");
+
+      if (headers) throw new Error("`headers` not implemented");
     }
 
     this.#uri = uri;
