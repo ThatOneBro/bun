@@ -1,5 +1,5 @@
-import type { IncomingHttpHeaders } from "node:http";
 import type * as e from "node:events";
+import type { IncomingHttpHeaders } from "node:http";
 import type * as s from "stream";
 
 const EventEmitter = require("node:events");
@@ -15,12 +15,12 @@ const kBunUndiciProxyAgentToken = Symbol("::bunUndiciProxyAgentToken::");
 // const kBunUndiciProxyAgentHeaders = Symbol("::bunUndiciProxyAgentHeaders::");
 
 const { fetch } = Bun;
-// @ts-ignore
+// @ts-expect-error `Request` and `Response` not typeof globalThis yet
 const { Response, Request, Headers, URLSearchParams, URL, FormData } = globalThis;
 
 class File extends Blob {}
 class FileReader extends EventTarget {
-  // @ts-ignore
+  // @ts-expect-error Constructor expects a call to `super()`
   constructor() {
     throw new Error("Not implemented yet!");
   }
@@ -46,7 +46,7 @@ class BodyReadable extends ReadableFromWeb {
   #response;
   #bodyUsed;
 
-  constructor(response, options = {}) {
+  constructor(response: Response, options = {}) {
     var { body } = response;
     if (!body) throw new Error("Response body is null");
     super(options, body);
@@ -56,7 +56,6 @@ class BodyReadable extends ReadableFromWeb {
   }
 
   get bodyUsed() {
-    // return this.#response.bodyUsed;
     return this.#bodyUsed;
   }
 
@@ -222,7 +221,7 @@ async function request(
   const {
     status: statusCode,
     headers,
-    // @ts-ignore
+    // @ts-expect-error Trailers not currently on types in Bun fetch
     trailers,
   } = (resp = await fetch(url, {
     signal,
