@@ -177,7 +177,15 @@ async function request(
     throw new Error("Body not allowed for GET or HEAD requests");
   }
 
-  // @ts-ignore
+  // for (let i = 0; i < inputHeaders.length; i++) {
+  //   if (!(Array.isArray(inputHeaders[i]) && inputHeaders[i].length === 2)) {
+  //     throw new TypeError(
+  //       "Headers must be a `Headers` object, an array of tuples (eg. [[`header-name`, `header_value`], [...]]), or an object.",
+  //     );
+  //   }
+  // }
+
+  // @ts-expect-error `Readable` type not quite right
   if (inputBody && (inputBody as s.Readable).read && inputBody instanceof Readable) {
     // TODO: Streaming via ReadableStream?
     let data = "";
@@ -206,9 +214,7 @@ async function request(
     if (token) {
       if (!inputHeaders) inputHeaders = {};
       if (Array.isArray(inputHeaders)) {
-        for (let i = 0; i < inputHeaders.length; i++) {
-          throw new TypeError("");
-        }
+        inputHeaders.push(["proxy-authorization", token]);
       } else if (inputHeaders instanceof Headers) {
         inputHeaders.append("proxy-authorization", token);
       } else {
@@ -313,12 +319,12 @@ class ProxyAgent extends Dispatcher {
       const { token: _token, auth, headers } = options;
       if (auth && token) {
         throw new Error(
-          "invalid arguments: cannot use `opt.auth` and `opt.token` simultaneously; use `opt.token` as `opt.auth` is deprecated",
+          "invalid arguments: cannot use `opt.auth` and `opt.token` simultaneously; use `opt.token`, `opt.auth` is deprecated",
         );
       }
       token = _token ?? `Basic ${auth}`;
       if (token && (typeof token !== "string" || !token.startsWith("Basic ")))
-        throw new TypeError("token must be a string formated as `Basic <TOKEN_IN_BASE_64>`");
+        throw new TypeError("token must be a string formatted as `Basic <TOKEN_IN_BASE_64>`");
 
       if (headers) throw new Error("`headers` not implemented");
     }
@@ -344,7 +350,9 @@ class ProxyAgent extends Dispatcher {
     return false;
   }
 
-  async close(): Promise<void> {}
+  async close(): Promise<void> {
+    return Promise.resolve(void 0);
+  }
 }
 
 class Pool extends Dispatcher {
